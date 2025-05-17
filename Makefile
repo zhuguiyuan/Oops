@@ -15,4 +15,4 @@ debug:
 clean:
 	moon $@
 
-.PHONY: build test clean debug
+.PHONY: run build test clean debug

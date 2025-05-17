@@ -11,9 +11,9 @@
 typedef struct
 {
     uint8_t *output; // 进程标准输出
-    int exited;      // 非 0 表示进程正常结束
+    int exited;      // 非零表示进程正常结束
     int exit_code;   // 仅当 exited 非零时有意义
-    int signaled;    // 非 0 表示进行异常终止
+    int signaled;    // 非零表示进行异常终止
 } *sh_result_t;
 
 uint8_t *sh_result_get_output(sh_result_t self)
