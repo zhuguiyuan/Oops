@@ -47,6 +47,24 @@ pub fn sh![T](cmd : String, ret : (String, Int) -> T) -> T {
 }
 
 ///|
+fn verbose_abort[T](msg : String) -> T {
+  println(msg)
+  abort(msg)
+}
+
+///|
+pub fn run(cmd : String) -> String {
+  fn ret(output : String, code : Int) -> String {
+    if code != 0 {
+      verbose_abort("\"bash -c \{cmd}\" exited with code = \{code}")
+    }
+    output
+  }
+
+  sh?(cmd, ret).unwrap()
+}
+
+///|
 test "sh" {
   let id = fn(x, y) { (x, y) }
   @json.inspect!(sh!("echo 42", id), content=["42\n", 0])
