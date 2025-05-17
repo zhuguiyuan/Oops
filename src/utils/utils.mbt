@@ -61,6 +61,12 @@ test "sh" {
     "exited": true,
     "signaled": false,
   })
+  @json.inspect!(sh("echo 42 > /dev/null"), content={
+    "output": "\n",
+    "exit_code": 0,
+    "exited": true,
+    "signaled": false,
+  })
 }
 
 ///|

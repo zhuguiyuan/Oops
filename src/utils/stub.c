@@ -18,6 +18,10 @@ typedef struct
 
 uint8_t *sh_result_get_output(sh_result_t self)
 {
+    if (self->output == NULL)
+    {
+        return moonbit_make_bytes(1, 0);
+    }
     moonbit_bytes_t ret = moonbit_make_bytes(strlen(self->output) + 1, 0);
     strcpy(ret, self->output);
     return ret;
@@ -90,12 +94,6 @@ void *execute_command(const uint8_t *cmd)
         size_t total_size = 0;
         while ((bytes_read = read(pipefd[0], buffer, sizeof(buffer))) > 0)
         {
-            if (bytes_read < 0)
-            {
-                perror("read error");
-                break;
-            }
-
             uint8_t *new_ptr = realloc(output, total_size + bytes_read + 1);
             if (!new_ptr)
             {
