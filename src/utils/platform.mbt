@@ -7,66 +7,50 @@ pub fn chdir(dir : String) -> Unit {
 }
 
 ///|
-type FFI_ShResult
+priv type ShResult
 
 ///|
-pub struct ShResult {
-  output : String
-  exit_code : Int
-  exited : Bool
-  signaled : Bool
-} derive(Show, ToJson)
+pub type! PlatformError (String, String)
 
 ///|
 #borrow(cmd)
-extern "C" fn ffi_execute_command(cmd : Bytes) -> FFI_ShResult = "execute_command"
+extern "C" fn ffi_execute_command(cmd : Bytes) -> ShResult = "execute_command"
 
 ///|
 #borrow(self)
-extern "C" fn FFI_ShResult::ffi_get_output(self : FFI_ShResult) -> Bytes = "sh_result_get_output"
+extern "C" fn ShResult::ffi_get_output(self : ShResult) -> Bytes = "sh_result_get_output"
 
 ///|
 #borrow(self)
-extern "C" fn FFI_ShResult::ffi_get_exit_code(self : FFI_ShResult) -> Int = "sh_result_get_exit_code"
+extern "C" fn ShResult::ffi_get_exit_code(self : ShResult) -> Int = "sh_result_get_exit_code"
 
 ///|
 #borrow(self)
-extern "C" fn FFI_ShResult::ffi_get_exited(self : FFI_ShResult) -> Bool = "sh_result_get_exited"
+extern "C" fn ShResult::ffi_get_stopped(self : ShResult) -> Bool = "sh_result_get_stopped"
 
 ///|
 #borrow(self)
-extern "C" fn FFI_ShResult::ffi_get_signaled(self : FFI_ShResult) -> Bool = "sh_result_get_signaled"
+extern "C" fn ShResult::ffi_get_signaled(self : ShResult) -> Bool = "sh_result_get_signaled"
 
 ///|
-pub fn FFI_ShResult::get_output(self : FFI_ShResult) -> String {
-  c_str_to_string(self.ffi_get_output())
-}
-
-///|
-pub fn sh(cmd : String) -> ShResult {
+pub fn sh![T](cmd : String, ret : (String, Int) -> T) -> T {
   let ffi_sh_result = ffi_execute_command(string_to_c_str(cmd))
-  {
-    output: ffi_sh_result.get_output(),
-    exit_code: ffi_sh_result.ffi_get_exit_code(),
-    exited: ffi_sh_result.ffi_get_exited(),
-    signaled: ffi_sh_result.ffi_get_signaled(),
+  if ffi_sh_result.ffi_get_stopped() {
+    raise PlatformError((cmd, "Stopped."))
+  } else if ffi_sh_result.ffi_get_signaled() {
+    raise PlatformError((cmd, "Signaled."))
+  } else {
+    let output = c_str_to_string(ffi_sh_result.ffi_get_output())
+    let exit_code = ffi_sh_result.ffi_get_exit_code()
+    ret(output, exit_code)
   }
 }
 
 ///|
 test "sh" {
-  @json.inspect!(sh("echo 42"), content={
-    "output": "42\n",
-    "exit_code": 0,
-    "exited": true,
-    "signaled": false,
-  })
-  @json.inspect!(sh("echo 42 > /dev/null"), content={
-    "output": "\n",
-    "exit_code": 0,
-    "exited": true,
-    "signaled": false,
-  })
+  let id = fn(x, y) { (x, y) }
+  @json.inspect!(sh!("echo 42", id), content=["42\n", 0])
+  @json.inspect!(sh!("echo 42 > /dev/null", id), content=["", 0])
 }
 
 ///|

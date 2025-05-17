@@ -11,9 +11,9 @@
 typedef struct
 {
     uint8_t *output; // 进程标准输出
-    int exited;      // 非零表示进程正常结束
-    int exit_code;   // 仅当 exited 非零时有意义
-    int signaled;    // 非零表示进行异常终止
+    int exit_code;
+    int stopped;
+    int signaled;
 } *sh_result_t;
 
 uint8_t *sh_result_get_output(sh_result_t self)
@@ -27,9 +27,9 @@ uint8_t *sh_result_get_output(sh_result_t self)
     return ret;
 }
 
-uint32_t sh_result_get_exited(sh_result_t self)
+uint32_t sh_result_get_stopped(sh_result_t self)
 {
-    return self->exited;
+    return self->stopped;
 }
 
 uint32_t sh_result_get_exit_code(sh_result_t self)
@@ -111,9 +111,9 @@ void *execute_command(const uint8_t *cmd)
 
         int status;
         waitpid(pid, &status, 0);
-        result->exited = WIFEXITED(status);
-        result->exit_code = WEXITSTATUS(status);
+        result->stopped = WIFSTOPPED(status);
         result->signaled = WIFSIGNALED(status);
+        result->exit_code = WEXITSTATUS(status);
         result->output = output;
         return result;
     }
