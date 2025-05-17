@@ -22,6 +22,20 @@ fn string_to_utf8(str : String) -> Bytes {
 }
 
 ///|
+fn c_str_to_string(str : Bytes) -> String {
+  guard str.to_array() is [.. xs, b'\x00']
+  @encoding.decode?(
+    @encoding.decoder(@encoding.UTF8),
+    Bytes::from_array(xs.to_array()),
+  ).unwrap()
+}
+
+///|
+test "c_str_to_string" {
+  inspect!(c_str_to_string(string_to_c_str("你好！")), content="你好！")
+}
+
+///|
 fn guard_zero(code : Int) -> Unit {
   guard code == 0
 
