@@ -21,12 +21,12 @@ pub fn info(s : String) -> Unit {
 }
 
 ///|
-pub fn warning(s : String) -> Unit {
+pub fn warn(s : String) -> Unit {
   log(COLOR_YELLOW, s)
 }
 
 ///|
-pub fn error(s : String) -> Unit {
+pub fn err(s : String) -> Unit {
   log(COLOR_RED, s)
 }
 
@@ -35,7 +35,7 @@ pub fn verbose_abort[T](msg : String, loc~ : SourceLoc = _) -> T {
   let abort_msg =
     $|\{msg}
     $|  at \{loc}
-  error(abort_msg)
+  err(abort_msg)
   abort(abort_msg)
 }
 

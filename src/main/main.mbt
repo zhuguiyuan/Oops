@@ -31,25 +31,37 @@ fnalias @utils.(verbose_unwrap_with_log, dir_exists, file_exists)
 fn oops_init(md_dir : String) -> Unit {
   // Ensure md_dir exists
   if dir_exists(md_dir) {
-    @utils.info("\{md_dir} already exists.")
-    return
-  }
-  @fs.create_dir?(md_dir)
-  |> verbose_unwrap_with_log("failed to create \{md_dir} folder")
-  // Create dir.json
-  let dir_json : Json = { ".": [{ "README": 1 }] }
-  @fs.write_string_to_file?("\{md_dir}/dir.json", dir_json.stringify())
-  |> verbose_unwrap_with_log("failed to write dir.json")
-  // Copy README.md
-  let readme_note_content = if file_exists("README.md") {
-    @fs.read_file_to_string?("README.md")
-    |> verbose_unwrap_with_log("failed to read README.md")
+    @utils.warn("\{md_dir} already exists")
   } else {
-    ""
+    @utils.info("create \{md_dir} folder")
+    @fs.create_dir?(md_dir)
+    |> verbose_unwrap_with_log("failed to create \{md_dir} folder")
   }
+  // Create dir.json
+  let dir_json_file = "\{md_dir}/dir.json"
+  if file_exists(dir_json_file) {
+    @utils.warn("\{dir_json_file} already exists")
+  } else {
+    @utils.info("create \{dir_json_file} file")
+    let dir_json_content : Json = { ".": [{ "README": 1 }] }
+    @fs.write_string_to_file?("\{dir_json_file}", dir_json_content.stringify())
+    |> verbose_unwrap_with_log("failed to write \{dir_json_file}")
+  }
+  // Copy README.md
   let readme_note_file = "\{md_dir}/README.md"
-  @fs.write_string_to_file?("\{readme_note_file}", readme_note_content)
-  |> verbose_unwrap_with_log("failed to write to \{readme_note_file}")
+  if file_exists(readme_note_file) {
+    @utils.warn("\{readme_note_file} already exists")
+  } else {
+    @utils.info("create \{readme_note_file} file")
+    let readme_note_content = if file_exists("README.md") {
+      @fs.read_file_to_string?("README.md")
+      |> verbose_unwrap_with_log("failed to read README.md")
+    } else {
+      ""
+    }
+    @fs.write_string_to_file?("\{readme_note_file}", readme_note_content)
+    |> verbose_unwrap_with_log("failed to write to \{readme_note_file}")
+  }
 }
 
 ///|
@@ -60,11 +72,12 @@ fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
   }
   let target_dir = "\{md_dir}/\{sub_dir}"
   if not(dir_exists(target_dir)) {
+    @utils.info("create \{target_dir}")
     @utils.run("mkdir -p \{target_dir}") |> ignore
   }
   let target_file = "\{target_dir}/\{filename}.md"
   if file_exists(target_file) {
-    @utils.info("\{target_file} already exists")
+    @utils.warn("\{target_file} already exists")
     return
   }
   // Initialize the file
