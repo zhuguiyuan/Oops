@@ -98,3 +98,15 @@ fn c_str_to_string(str : Bytes) -> String {
 test "c_str_to_string" {
   inspect!(c_str_to_string(string_to_c_str("你好！")), content="你好！")
 }
+
+///|
+pub fn dir_exists(path : String) -> Bool {
+  @fs.path_exists(path) &&
+  (@fs.is_dir?(path) |> verbose_unwrap_with_log("error: \{path} is not a dir"))
+}
+
+///|
+pub fn file_exists(path : String) -> Bool {
+  @fs.path_exists(path) &&
+  (@fs.is_file?(path) |> verbose_unwrap_with_log("error: \{path} is not a file"))
+}

@@ -1,6 +1,7 @@
 {
   "import": [
-    "moonbitlang/x/encoding"
+    "moonbitlang/x/encoding",
+    "moonbitlang/x/fs"
   ],
   "targets": {
     "utils.mbt": ["native"]

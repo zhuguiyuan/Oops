@@ -14,48 +14,70 @@ fn main {
     #|
     #|Created by Guiyuan <zhugy2022@qq.com>
     #|Inspired by https://github.com/luzhixing12345/zood
+  let md_dir = CONFIG_MARKDOWN_FOLDER
   match argv {
-    ["init"] => oops_init(CONFIG_MARKDOWN_FOLDER)
-    ["new", filename] => println("new \{filename}")
-    ["new", sub_dir, filename] => println("new \{sub_dir} \{filename}")
+    ["init"] => oops_init(md_dir)
+    ["new", filename] => oops_new(md_dir, ".", filename)
+    ["new", sub_dir, filename] => oops_new(md_dir, sub_dir, filename)
     ["build"] => println("build")
     _ => println(usage)
   }
 }
 
 ///|
-fnalias @utils.(verbose_unwrap, verbose_unwrap_with_log)
+fnalias @utils.(verbose_unwrap_with_log, dir_exists, file_exists)
 
 ///|
-fn oops_init(md_dir_name : String) -> Unit {
-  fn dir_exists(path : String) {
-    @fs.path_exists(path) && (@fs.is_dir?(path) |> verbose_unwrap)
-  }
-
-  fn read_file(file : String) {
-    if @fs.path_exists(file) && (@fs.is_file?(file) |> verbose_unwrap) {
-      @fs.read_file_to_string?(file)
-      |> verbose_unwrap_with_log("failed to read README.md")
-    } else {
-      ""
-    }
-  }
-
-  fn init_dir_json(dir_json_file) {
-    let dir_json : Json = { ".": [{ "README": 1 }] }
-    @fs.write_string_to_file?(dir_json_file, dir_json.stringify())
-    |> verbose_unwrap_with_log("failed to write dir.json")
-  }
-
-  if dir_exists(md_dir_name) {
-    @utils.info("\{md_dir_name} already exists.")
+fn oops_init(md_dir : String) -> Unit {
+  // Ensure md_dir exists
+  if dir_exists(md_dir) {
+    @utils.info("\{md_dir} already exists.")
     return
   }
-  @fs.create_dir?(md_dir_name)
-  |> verbose_unwrap_with_log("failed to create \{md_dir_name}")
-  init_dir_json("\{md_dir_name}/dir.json")
-  let readme_note_content = read_file("README.md")
-  let readme_note_file = "\{md_dir_name}/README.md"
+  @fs.create_dir?(md_dir)
+  |> verbose_unwrap_with_log("failed to create \{md_dir} folder")
+  // Create dir.json
+  let dir_json : Json = { ".": [{ "README": 1 }] }
+  @fs.write_string_to_file?("\{md_dir}/dir.json", dir_json.stringify())
+  |> verbose_unwrap_with_log("failed to write dir.json")
+  // Copy README.md
+  let readme_note_content = if file_exists("README.md") {
+    @fs.read_file_to_string?("README.md")
+    |> verbose_unwrap_with_log("failed to read README.md")
+  } else {
+    ""
+  }
+  let readme_note_file = "\{md_dir}/README.md"
   @fs.write_string_to_file?("\{readme_note_file}", readme_note_content)
   |> verbose_unwrap_with_log("failed to write to \{readme_note_file}")
+}
+
+///|
+fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
+  // Ensure parent folders exist
+  if not(dir_exists(md_dir)) {
+    oops_init(md_dir)
+  }
+  let target_dir = "\{md_dir}/\{sub_dir}"
+  if not(dir_exists(target_dir)) {
+    @utils.run("mkdir -p \{target_dir}") |> ignore
+  }
+  let target_file = "\{target_dir}/\{filename}.md"
+  if file_exists(target_file) {
+    @utils.info("\{target_file} already exists")
+    return
+  }
+  // Initialize the file
+  @fs.write_string_to_file?(
+    target_file,
+    $|# \{filename}
+    #|
+    ,
+  )
+  |> verbose_unwrap_with_log("failed to create \{target_file} file")
+  // Update dir.json (TODO)
+  let old_dir_json = @fs.read_file_to_string?("\{md_dir}/dir.json")
+    |> verbose_unwrap_with_log("failed to read \{md_dir}/dir.json")
+  ignore(old_dir_json)
+  @utils.info("\{target_file} has been created")
 }
