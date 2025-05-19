@@ -1,7 +1,7 @@
 MOON_ARGS := --target native
 
 run:
-	moon $@ $(MOON_ARGS) src/main
+	moon $@ $(MOON_ARGS) src/main init
 
 build:
 	moon $@ $(MOON_ARGS)

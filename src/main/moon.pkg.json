@@ -2,7 +2,8 @@
   "is-main": true,
   "import": [
     "zhuguiyuan/Oops/utils",
-    "moonbitlang/x/sys"
+    "moonbitlang/x/sys",
+    "moonbitlang/x/fs"
   ],
   "targets": {
     "main.mbt": ["native"]
