@@ -41,12 +41,19 @@ fn oops_init(md_dir_name : String) -> Unit {
     }
   }
 
+  fn init_dir_json(dir_json_file) {
+    let dir_json : Json = { ".": [{ "README": 1 }] }
+    @fs.write_string_to_file?(dir_json_file, dir_json.stringify())
+    |> verbose_unwrap_with_log("failed to write dir.json")
+  }
+
   if dir_exists(md_dir_name) {
     @utils.info("\{md_dir_name} already exists.")
     return
   }
   @fs.create_dir?(md_dir_name)
   |> verbose_unwrap_with_log("failed to create \{md_dir_name}")
+  init_dir_json("\{md_dir_name}/dir.json")
   let readme_note_content = read_file("README.md")
   let readme_note_file = "\{md_dir_name}/README.md"
   @fs.write_string_to_file?("\{readme_note_file}", readme_note_content)
