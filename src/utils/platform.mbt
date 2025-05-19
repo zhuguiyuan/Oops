@@ -55,7 +55,7 @@ pub fn run(cmd : String) -> String {
     output
   }
 
-  sh?(cmd, ret).unwrap()
+  sh?(cmd, ret) |> verbose_unwrap
 }
 
 ///|
@@ -102,11 +102,11 @@ test "c_str_to_string" {
 ///|
 pub fn dir_exists(path : String) -> Bool {
   @fs.path_exists(path) &&
-  (@fs.is_dir?(path) |> verbose_unwrap_with_log("error: \{path} is not a dir"))
+  (@fs.is_dir?(path) |> verbose_unwrap_with_log("failed to stat \{path}"))
 }
 
 ///|
 pub fn file_exists(path : String) -> Bool {
   @fs.path_exists(path) &&
-  (@fs.is_file?(path) |> verbose_unwrap_with_log("error: \{path} is not a file"))
+  (@fs.is_file?(path) |> verbose_unwrap_with_log("failed to stat \{path}"))
 }
