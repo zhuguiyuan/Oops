@@ -6,10 +6,5 @@
   "targets": {
     "main.mbt": ["native"]
   },
-  "link": {
-    "native": {
-      "cc-link-flags": "-lc"
-    }
-  },
   "supported-targets": ["native"]
 }

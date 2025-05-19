@@ -1,4 +1,4 @@
 ///|
 fn main {
-  println(@utils.run("false"))
+  println(@utils.run("echo 10"))
 }
