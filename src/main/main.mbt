@@ -25,7 +25,7 @@ fn main {
 }
 
 ///|
-fnalias @utils.(verbose_unwrap_with_log, dir_exists, file_exists)
+fnalias @utils.(dir_exists, file_exists, verbose_unwrap_with_log)
 
 ///|
 fn oops_init(md_dir : String) -> Unit {
@@ -43,7 +43,7 @@ fn oops_init(md_dir : String) -> Unit {
     @utils.warn("\{dir_json_file} already exists")
   } else {
     @utils.info("create \{dir_json_file} file")
-    let dir_json_content : Json = { ".": [{ "README": 1 }] }
+    let dir_json_content : Json = { ".": { "README": 1 } }
     @fs.write_string_to_file?("\{dir_json_file}", dir_json_content.stringify())
     |> verbose_unwrap_with_log("failed to write \{dir_json_file}")
   }
@@ -66,21 +66,22 @@ fn oops_init(md_dir : String) -> Unit {
 
 ///|
 fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
-  // Ensure parent folders exist
-  if not(dir_exists(md_dir)) {
+  let dir_json_file = "\{md_dir}/dir.json"
+  if not(dir_exists(md_dir)) || not(file_exists(dir_json_file)) {
     oops_init(md_dir)
   }
+  // Ensure parent folders exist
   let target_dir = "\{md_dir}/\{sub_dir}"
   if not(dir_exists(target_dir)) {
     @utils.info("create \{target_dir}")
     @utils.run("mkdir -p \{target_dir}") |> ignore
   }
+  // Initialize the target file
   let target_file = "\{target_dir}/\{filename}.md"
   if file_exists(target_file) {
     @utils.warn("\{target_file} already exists")
     return
   }
-  // Initialize the file
   @fs.write_string_to_file?(
     target_file,
     $|# \{filename}
@@ -88,9 +89,34 @@ fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
     ,
   )
   |> verbose_unwrap_with_log("failed to create \{target_file} file")
-  // Update dir.json (TODO)
-  let old_dir_json = @fs.read_file_to_string?("\{md_dir}/dir.json")
-    |> verbose_unwrap_with_log("failed to read \{md_dir}/dir.json")
-  ignore(old_dir_json)
+  // Update dir.json
+  let dir_json_content = @fs.read_file_to_string?(dir_json_file)
+    |> verbose_unwrap_with_log("failed to read \{dir_json_file}")
+  if not(@json.valid(dir_json_content)) {
+    @utils.err("\{dir_json_file} is broken")
+    return
+  }
+  let dir_json_map : Map[String, Map[String, Int]] = @json.parse?(
+      dir_json_content,
+    )
+    |> verbose_unwrap_with_log("failed to parse \{dir_json_file}")
+    |> @json.from_json?() // know from illusory0x0
+    |> verbose_unwrap_with_log("failed to convert \{dir_json_file} to a map")
+  if dir_json_map.contains(sub_dir) {
+    let filelist = dir_json_map.get(sub_dir).unwrap()
+    let max_idx = filelist
+      .values()
+      .fold(init=0, fn(x, y) { if x > y { x } else { y } })
+    filelist[filename] = max_idx + 1
+  } else {
+    let default_filelist : Map[String, Int] = {}
+    default_filelist[filename] = 1
+    dir_json_map[sub_dir] = default_filelist
+  }
+  @fs.write_string_to_file?(
+    "\{dir_json_file}",
+    dir_json_map.to_json().stringify(),
+  )
+  |> verbose_unwrap_with_log("failed to write \{dir_json_file}")
   @utils.info("\{target_file} has been created")
 }
