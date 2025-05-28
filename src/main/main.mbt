@@ -1,3 +1,6 @@
+///| [Folder -> [Filename -> Index]]
+typealias DirMap = Map[String, Map[String, Int]]
+
 ///|
 fn main {
   let argv = @sys.get_cli_args()[1:]
@@ -97,9 +100,7 @@ fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
   )
   |> verbose_unwrap_with_log("failed to create \{target_file} file")
   // Update dir.json
-  let dir_json_map : Map[String, Map[String, Int]] = @json.parse?(
-      dir_json_content,
-    )
+  let dir_json_map : DirMap = @json.parse?(dir_json_content)
     |> verbose_unwrap_with_log("failed to parse \{dir_json_file}")
     |> @json.from_json?() // know from illusory0x0
     |> verbose_unwrap_with_log("failed to convert \{dir_json_file} to a map")
