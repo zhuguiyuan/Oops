@@ -78,8 +78,7 @@ fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
   let dir_json_content = @fs.read_file_to_string?(dir_json_file)
     |> verbose_unwrap_with_log("failed to read \{dir_json_file}")
   if not(@json.valid(dir_json_content)) {
-    @utils.err("\{dir_json_file} is broken")
-    return
+    @utils.verbose_abort("\{dir_json_file} is broken")
   }
   // Ensure parent folders exist
   let target_dir = "\{md_dir}/\{sub_dir}"
@@ -129,14 +128,12 @@ fn oops_build(md_dir : String, html_dir : String) -> Unit {
   // Read dir.json
   let dir_json_file = "\{md_dir}/dir.json"
   if not(dir_exists(md_dir)) || not(file_exists(dir_json_file)) {
-    @utils.err("\{dir_json_file} doesn't exist")
-    return
+    @utils.verbose_abort("\{dir_json_file} doesn't exist")
   }
   let dir_json_content = @fs.read_file_to_string?(dir_json_file)
     |> verbose_unwrap_with_log("failed to read \{dir_json_file}")
   if not(@json.valid(dir_json_content)) {
-    @utils.err("\{dir_json_file} is broken")
-    return
+    @utils.verbose_abort("\{dir_json_file} is broken")
   }
   let dir_json_map : DirMap = @json.parse?(dir_json_content)
     |> verbose_unwrap_with_log("failed to parse \{dir_json_file}")
