@@ -18,11 +18,12 @@ fn main {
     #|Created by Guiyuan <zhugy2022@qq.com>
     #|Inspired by https://github.com/luzhixing12345/zood
   let md_dir = CONFIG_MARKDOWN_FOLDER
+  let html_dir = CONFIG_HTML_FOLDER
   match argv {
     ["init"] => oops_init(md_dir)
     ["new", filename] => oops_new(md_dir, ".", filename)
     ["new", sub_dir, filename] => oops_new(md_dir, sub_dir, filename)
-    ["build"] => println("build")
+    ["build"] => oops_build(md_dir, html_dir)
     _ => println(usage)
   }
 }
@@ -121,4 +122,27 @@ fn oops_new(md_dir : String, sub_dir : String, filename : String) -> Unit {
   )
   |> verbose_unwrap_with_log("failed to write \{dir_json_file}")
   @utils.info("\{target_file} has been created")
+}
+
+///|
+fn oops_build(md_dir : String, html_dir : String) -> Unit {
+  // Read dir.json
+  let dir_json_file = "\{md_dir}/dir.json"
+  if not(dir_exists(md_dir)) || not(file_exists(dir_json_file)) {
+    @utils.err("\{dir_json_file} doesn't exist")
+    return
+  }
+  let dir_json_content = @fs.read_file_to_string?(dir_json_file)
+    |> verbose_unwrap_with_log("failed to read \{dir_json_file}")
+  if not(@json.valid(dir_json_content)) {
+    @utils.err("\{dir_json_file} is broken")
+    return
+  }
+  let dir_json_map : DirMap = @json.parse?(dir_json_content)
+    |> verbose_unwrap_with_log("failed to parse \{dir_json_file}")
+    |> @json.from_json?()
+    |> verbose_unwrap_with_log("failed to convert \{dir_json_file} to a map")
+  // TODO: process dir.json
+  ignore(dir_json_map)
+  ignore(html_dir)
 }
