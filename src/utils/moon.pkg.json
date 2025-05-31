@@ -3,9 +3,6 @@
     "moonbitlang/x/encoding",
     "moonbitlang/x/fs"
   ],
-  "targets": {
-    "utils.mbt": ["native"]
-  },
   "supported-targets": ["native"],
   "native-stub": ["stub.c"]
 }

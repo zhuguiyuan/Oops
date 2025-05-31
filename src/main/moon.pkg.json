@@ -5,8 +5,5 @@
     "moonbitlang/x/sys",
     "moonbitlang/x/fs"
   ],
-  "targets": {
-    "main.mbt": ["native"]
-  },
   "supported-targets": ["native"]
 }
