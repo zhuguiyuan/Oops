@@ -31,7 +31,7 @@ pub fn err(s : String) -> Unit {
 }
 
 ///|
-pub fn verbose_abort[T](msg : String, loc~ : SourceLoc = _) -> T {
+pub fn[T] verbose_abort(msg : String, loc~ : SourceLoc = _) -> T {
   let abort_msg =
     $|\{msg}
     $|  at \{loc}
@@ -40,7 +40,7 @@ pub fn verbose_abort[T](msg : String, loc~ : SourceLoc = _) -> T {
 }
 
 ///|
-pub fn verbose_unwrap[T, E](x : Result[T, E], loc~ : SourceLoc = _) -> T {
+pub fn[T, E] verbose_unwrap(x : Result[T, E], loc~ : SourceLoc = _) -> T {
   match x {
     Ok(x) => x
     Err(_) =>
@@ -53,7 +53,7 @@ pub fn verbose_unwrap[T, E](x : Result[T, E], loc~ : SourceLoc = _) -> T {
 }
 
 ///|
-pub fn verbose_unwrap_with_log[T, E](
+pub fn[T, E] verbose_unwrap_with_log(
   x : Result[T, E],
   log : String,
   loc~ : SourceLoc = _

@@ -13,6 +13,13 @@ fn get_git_repo_url_opt() -> String? {
       None
     }
   })
+  .map(fn(url) {
+    if url.has_suffix(".git") {
+      url.charcodes(start=0, end=url.length() - 4).to_string()
+    } else {
+      url
+    }
+  })
 }
 
 ///|

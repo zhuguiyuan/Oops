@@ -33,7 +33,7 @@ extern "C" fn ShResult::ffi_get_stopped(self : ShResult) -> Bool = "sh_result_ge
 extern "C" fn ShResult::ffi_get_signaled(self : ShResult) -> Bool = "sh_result_get_signaled"
 
 ///|
-pub fn sh![T](cmd : String, ret : (String, Int) -> T) -> T {
+pub fn[T] sh!(cmd : String, ret : (String, Int) -> T) -> T {
   let ffi_sh_result = ffi_execute_command(string_to_c_str(cmd))
   if ffi_sh_result.ffi_get_stopped() {
     raise PlatformError((cmd, "Stopped."))
@@ -88,10 +88,9 @@ fn string_to_c_str(str : String) -> Bytes {
 ///|
 fn c_str_to_string(str : Bytes) -> String {
   guard str.to_array() is [.. xs, b'\x00']
-  @encoding.decode?(
-    @encoding.decoder(@encoding.UTF8),
-    Bytes::from_array(xs.to_array()),
-  ).unwrap()
+  @encoding.decoder(@encoding.UTF8)
+  .decode?(Bytes::from_array(xs.to_array()))
+  .unwrap()
 }
 
 ///|
