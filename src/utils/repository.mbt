@@ -15,7 +15,7 @@ fn get_git_repo_url_opt() -> String? {
   })
   .map(fn(url) {
     if url.has_suffix(".git") {
-      url.charcodes(start=0, end=url.length() - 4).to_string()
+      url.substring(start=0, end=url.length() - 4)
     } else {
       url
     }
